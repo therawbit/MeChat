@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="css/register.css">
+</head>
+<body>
+<div class="container">
+    <h1>Welcome!</h1>
+    <p>Sign up to MeChat</p>
+    <form action="/register" method="post" id="registerForm">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="fullName" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Email Address</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <button type="submit">Create Account</button>
+        </div>
+    </form>
+</div>
+</body>
+<script>
+    const registerForm = document.getElementById('registerForm');
+
+    registerForm.addEventListener('submit', (event) => {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = {
+            fullName: document.getElementById('name').value,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+        }; // Create object with form data
+
+        const jsonData = JSON.stringify(formData); // Convert object to JSON string
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Set content type header
+            },
+            body: jsonData
+        })
+            .then(response => response.json()) // Parse response as JSON
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = "/login"; // Redirect to login on success
+                } else {
+                    alert(data.message); // Display error message using alert
+                }
+            })
+            .catch(error => {
+                console.error("Error submitting registration:", error);
+            });
+    });
+</script>
+</html>
