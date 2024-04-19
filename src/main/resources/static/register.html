@@ -52,7 +52,7 @@
         })
             .then(response => response.json()) // Parse response as JSON
             .then(data => {
-                if (data.status === 'success') {
+                if (data.success === 'True') {
                     window.location.href = "/login"; // Redirect to login on success
                 } else {
                     alert(data.message); // Display error message using alert

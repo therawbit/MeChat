@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,20 +29,20 @@ public class UserController {
 
     @MessageMapping("/user.addUser")
     @SendTo("/user/public")
-    public User addUser(@RequestBody User user){
-
+    public UserDTO addUser(@Payload UserDTO user){
+        service.updateStatus(user);
         return user;
     }
 
     @MessageMapping("/user.disconnectUser")
     @SendTo("/user/public")
-    public User disconnect(@RequestBody User user){
+    public User disconnect(@Payload User user){
         service.disconnect(user);
         return user;
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getConnectedUsers(){
+    public ResponseEntity<List<UserDTO>> getConnectedUsers(){
         return ResponseEntity.ok(service.findConnectedUsers());
     }
 

@@ -1,53 +1,48 @@
 'use strict';
 
-const usernamePage = document.querySelector('#username-page');
 const chatPage = document.querySelector('#chat-page');
-const usernameForm = document.querySelector('#usernameForm');
 const messageForm = document.querySelector('#messageForm');
 const messageInput = document.querySelector('#message');
 const connectingElement = document.querySelector('.connecting');
 const chatArea = document.querySelector('#chat-messages');
-const logout = document.querySelector('#logout');
-
 let stompClient = null;
-let nickname = null;
-let fullname = null;
+let userinfo = null;
 let selectedUserId = null;
 
-function connect(event) {
-    nickname = document.querySelector('#nickname').value.trim();
-    fullname = document.querySelector('#fullname').value.trim();
+function connect() {
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
 
-    if (nickname && fullname) {
-        usernamePage.classList.add('hidden');
-        chatPage.classList.remove('hidden');
-
-        const socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, onConnected, onError);
-    }
-    event.preventDefault();
+    stompClient.connect({}, onConnected, onError);
 }
-
 
 function onConnected() {
-    stompClient.subscribe(`/user/${nickname}/queue/messages`, onMessageReceived);
-    stompClient.subscribe(`/user/public`, onMessageReceived);
+    // Fetch user info from the server (replace with your actual endpoint)
+    fetch('/me')
+        .then(response => response.json())
+        .then(user => {
+            userinfo = user
+            const { username, fullName } = user; // Assuming data structure
 
-    // register the connected user
-    stompClient.send("/app/user.addUser",
-        {},
-        JSON.stringify({nickName: nickname, fullName: fullname, status: 'ONLINE'})
-    );
-    document.querySelector('#connected-user-fullname').textContent = fullname;
-    findAndDisplayConnectedUsers().then();
+            stompClient.subscribe(`/user/${username}/queue/messages`, onMessageReceived);
+            stompClient.subscribe(`/user/public`, onMessageReceived);
+
+            // Send user info to /user.addUser
+            stompClient.send("/app/user.addUser",
+                {},
+                JSON.stringify({ username: username, fullName, status: 'ONLINE' })
+            );
+            findAndDisplayConnectedUsers().then();
+
+        })
+        .catch(error => console.error("Error fetching user info:", error));
+
+    document.querySelector('#connected-user-fullname').textContent = userinfo.fullName; // Assuming fullName is retrieved
 }
-
 async function findAndDisplayConnectedUsers() {
     const connectedUsersResponse = await fetch('/users');
     let connectedUsers = await connectedUsersResponse.json();
-    connectedUsers = connectedUsers.filter(user => user.nickName !== nickname);
+    connectedUsers = connectedUsers.filter(user => user.username !== userinfo.username);
     const connectedUsersList = document.getElementById('connectedUsers');
     connectedUsersList.innerHTML = '';
 
@@ -64,7 +59,7 @@ async function findAndDisplayConnectedUsers() {
 function appendUserElement(user, connectedUsersList) {
     const listItem = document.createElement('li');
     listItem.classList.add('user-item');
-    listItem.id = user.nickName;
+    listItem.id = user.username;
 
     const userImage = document.createElement('img');
     userImage.src = '../img/user_icon.png';
@@ -103,11 +98,41 @@ function userItemClick(event) {
     nbrMsg.textContent = '0';
 
 }
+async function fetchAndDisplayUserChat() {
+    const userChatResponse = await fetch(`/messages/${userinfo.username}/${selectedUserId}`);
+    const userChat = await userChatResponse.json();
+    chatArea.innerHTML = '';
+    userChat.forEach(chat => {
+        displayMessage(chat.senderId, chat.content);
+    });
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function onError() {
+    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
+    connectingElement.style.color = 'red';
+}
+
+function sendMessage(event) {
+    const messageContent = messageInput.value.trim();
+    if (messageContent && stompClient) {
+        const chatMessage = {
+            senderId: userinfo.username, // Assuming username is retrieved
+            content: messageContent,
+            timestamp: new Date()
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+        displayMessage(userinfo.username, messageInput.value.trim());
+        messageInput.value = '';
+    }
+    chatArea.scrollTop = chatArea.scrollHeight;
+    event.preventDefault();
+}
 
 function displayMessage(senderId, content) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message');
-    if (senderId === nickname) {
+    if (senderId === userinfo.username) {
         messageContainer.classList.add('sender');
     } else {
         messageContainer.classList.add('receiver');
@@ -118,73 +143,13 @@ function displayMessage(senderId, content) {
     chatArea.appendChild(messageContainer);
 }
 
-async function fetchAndDisplayUserChat() {
-    const userChatResponse = await fetch(`/messages/${nickname}/${selectedUserId}`);
-    const userChat = await userChatResponse.json();
-    chatArea.innerHTML = '';
-    userChat.forEach(chat => {
-        displayMessage(chat.senderId, chat.content);
-    });
-    chatArea.scrollTop = chatArea.scrollHeight;
-}
-
-
-function onError() {
-    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';
-}
-
-
-function sendMessage(event) {
-    const messageContent = messageInput.value.trim();
-    if (messageContent && stompClient) {
-        const chatMessage = {
-            senderId: nickname,
-            receiverId: selectedUserId,
-            content: messageInput.value.trim(),
-            timestamp: new Date()
-        };
-        stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
-        displayMessage(nickname, messageInput.value.trim());
-        messageInput.value = '';
-    }
-    chatArea.scrollTop = chatArea.scrollHeight;
-    event.preventDefault();
-}
-
-
-async function onMessageReceived(payload) {
-    await findAndDisplayConnectedUsers();
+// Implement logic to handle received messages (e.g., parsing, displaying)
+function onMessageReceived(payload) {
     console.log('Message received', payload);
-    const message = JSON.parse(payload.body);
-    if (selectedUserId && selectedUserId === message.senderId) {
-        displayMessage(message.senderId, message.content);
-        chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    if (selectedUserId) {
-        document.querySelector(`#${selectedUserId}`).classList.add('active');
-    } else {
-        messageForm.classList.add('hidden');
-    }
-
-    const notifiedUser = document.querySelector(`#${message.senderId}`);
-    if (notifiedUser && !notifiedUser.classList.contains('active')) {
-        const nbrMsg = notifiedUser.querySelector('.nbr-msg');
-        nbrMsg.classList.remove('hidden');
-        nbrMsg.textContent = '';
-    }
+    // Replace with your message handling logic
 }
 
-function onLogout() {
-    stompClient.send("/app/user.disconnectUser",
-        {},
-        JSON.stringify({nickName: nickname, fullName: fullname, status: 'OFFLINE'})
-    );
-    window.location.reload();
-}
+// Connect to WebSocket server on page load
+window.onload = connect;
 
-usernameForm.addEventListener('submit', connect, true); // step 1
 messageForm.addEventListener('submit', sendMessage, true);
-logout.addEventListener('click', onLogout, true);
-window.onbeforeunload = () => onLogout();

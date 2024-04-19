@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +33,8 @@ public class UserService {
         }
     }
 
-    public List<User> findConnectedUsers() {
-        return repository.findAllByStatus(Status.ONLINE);
+    public List<UserDTO> findConnectedUsers() {
+        return repository.findAllByStatus(Status.ONLINE).stream().map(user -> new UserDTO(user.getUsername(),user.getFullName(),user.getStatus())).collect(Collectors.toList());
     }
 
     public void registerUser(UserRegisterDTO registerDto) {
@@ -56,6 +57,12 @@ public class UserService {
         dto.setUsername(user.getUsername());
         dto.setStatus(user.getStatus());
         return dto;
+    }
+
+    public void updateStatus(UserDTO user) {
+        User u = repository.findByUsername(user.getUsername()).orElseThrow();
+        u.setStatus(Status.ONLINE);
+        repository.save(u);
     }
 }
 
