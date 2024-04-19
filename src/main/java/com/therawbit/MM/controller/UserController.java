@@ -1,7 +1,7 @@
 package com.therawbit.MM.controller;
 
-import ch.qos.logback.classic.Logger;
 import com.therawbit.MM.dto.ApiResponse;
+import com.therawbit.MM.dto.UserDTO;
 import com.therawbit.MM.dto.UserRegisterDTO;
 import com.therawbit.MM.service.UserService;
 import com.therawbit.MM.entity.User;
@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,7 @@ public class UserController {
     @MessageMapping("/user.addUser")
     @SendTo("/user/public")
     public User addUser(@RequestBody User user){
-        service.saveUser(user);
+
         return user;
     }
 
@@ -58,6 +58,11 @@ public class UserController {
         service.registerUser(registerDto);
         return new ResponseEntity<>(new ApiResponse("User created successfully.", true), HttpStatus.OK);
 
+
+    }
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getUserDetails(){
+        return new ResponseEntity<>(service.getUserDetail(),HttpStatus.OK);
     }
 
 }

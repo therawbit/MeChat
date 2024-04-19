@@ -1,10 +1,12 @@
 package com.therawbit.MM.service;
 
+import com.therawbit.MM.dto.UserDTO;
 import com.therawbit.MM.dto.UserRegisterDTO;
 import com.therawbit.MM.repository.UserRepository;
 import com.therawbit.MM.entity.Status;
 import com.therawbit.MM.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +46,16 @@ public class UserService {
         user.setFullName(registerDto.getFullName());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
         repository.save(user);
+    }
+
+    public UserDTO getUserDetail() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = repository.findByUsername(username).orElseThrow();
+        UserDTO dto = new UserDTO();
+        dto.setFullName(user.getFullName());
+        dto.setUsername(user.getUsername());
+        dto.setStatus(user.getStatus());
+        return dto;
     }
 }
 
