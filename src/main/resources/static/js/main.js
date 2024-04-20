@@ -119,6 +119,7 @@ function sendMessage(event) {
         const chatMessage = {
             senderId: userinfo.username, // Assuming username is retrieved
             content: messageContent,
+            receiverId: selectedUserId,
             timestamp: new Date()
         };
         stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
@@ -144,9 +145,27 @@ function displayMessage(senderId, content) {
 }
 
 // Implement logic to handle received messages (e.g., parsing, displaying)
-function onMessageReceived(payload) {
+async function onMessageReceived(payload) {
+    await findAndDisplayConnectedUsers();
     console.log('Message received', payload);
-    // Replace with your message handling logic
+    const message = JSON.parse(payload.body);
+    if (selectedUserId && selectedUserId === message.senderId) {
+        displayMessage(message.senderId, message.content);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    if (selectedUserId) {
+        document.querySelector(`#${selectedUserId}`).classList.add('active');
+    } else {
+        messageForm.classList.add('hidden');
+    }
+
+    const notifiedUser = document.querySelector(`#${message.senderId}`);
+    if (notifiedUser && !notifiedUser.classList.contains('active')) {
+        const nbrMsg = notifiedUser.querySelector('.nbr-msg');
+        nbrMsg.classList.remove('hidden');
+        nbrMsg.textContent = '';
+    }    // Replace with your message handling logic
 }
 
 // Connect to WebSocket server on page load
