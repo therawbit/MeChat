@@ -8,6 +8,7 @@ import com.therawbit.MM.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.net.URI;
 import java.util.List;
 
 @Controller
@@ -63,6 +65,16 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getUserDetails(){
         return new ResponseEntity<>(service.getUserDetail(),HttpStatus.OK);
+    }
+
+    @GetMapping("/register")
+    public ResponseEntity<?> getRegister(){
+      return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, "/register.html").build();
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<?> getLogin(){
+        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, "/login.html").build();
     }
 
 }

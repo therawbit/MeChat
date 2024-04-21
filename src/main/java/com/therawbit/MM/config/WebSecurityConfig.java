@@ -20,7 +20,7 @@ public class WebSecurityConfig {
     @Autowired
     UserDetailsService userDetailsService;
     public static String[] PUBLIC_URLS={
-            "/register", "/static/register.html","register.html","/error","/css/*"
+            "/register", "/login.html","register.html","/error","/css/*","/login"
     };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
@@ -30,7 +30,7 @@ public class WebSecurityConfig {
         );
         http.csrf(AbstractHttpConfigurer::disable);
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
-        http.formLogin(Customizer.withDefaults());
+        http.formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.loginPage("/login"));
         return http.build();
     }
     @Bean
