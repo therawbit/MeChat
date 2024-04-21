@@ -169,9 +169,10 @@ body {
 .logout:hover {
     text-decoration: underline;
 }
-.hidden{
-    display: none;
-}
+
 .far{
     margin-right: 5px;
+}
+.hidden{
+    display: none !important;
 }
