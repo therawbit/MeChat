@@ -19,8 +19,7 @@ body {
 }
 .chat-container {
     display: flex;
-    max-width: 1200px;
-    min-width: 800px;
+    width: 70vw;
     border: 1px solid #ccc;
     background-color: #fff;
     overflow: hidden;
@@ -32,7 +31,7 @@ body {
     flex: 1;
     padding: 20px;
     box-sizing: border-box;
-    background-color: #3498db;
+    background-color: #535b60;
     color: #fff;
     border-radius: 8px 0 0 8px;
     display: flex;
@@ -55,6 +54,10 @@ body {
     flex: 1;
 }
 
+.nbr-msg {
+    margin-left: 10px;
+    color: #49caea;
+}
 .users-list h3 {
     font-size: 1.2rem;
     margin-bottom: 10px;
@@ -79,8 +82,7 @@ body {
 }
 
 .chat-header {
-    padding: 0px;
-    background-color: #3498db;
+    background-color: #535b60;
     color: #fff;
     border-radius: 0 8px 0 0;
 }
@@ -95,14 +97,14 @@ body {
 
 .chat-messages .message {
     margin-bottom: 15px;
-    padding: 0px;
+    padding: 0;
     border-radius: 6px;
     /*! word-wrap: break-word; */
     width: fit-content;
 }
 
 .chat-messages .sender {
-    background-color: #3498db;
+    background-color: #535b60;
     color: #fff;
     align-self: flex-end;
     /*! display: flex; */
@@ -128,13 +130,35 @@ body {
     margin-right: 10px;
     border-radius: 6px
 }
+.user-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
 
+.user-item span {
+    font-weight: bold;
+
+}
+
+.separator {
+    height: 1px;
+    background-color: #ccc;
+    margin: 10px 0;
+}
 #messageForm button {
-    padding: 0px;
-    background-color: #3498db;
+    background-color: #535b60;
     color: #fff;
     border-radius:6px;
     cursor: pointer;
+    padding: 5px 15px;
+}
+.user-item.active {
+    background-color: #d8e1ec;
+    color: #4f4f4f;
+    padding: 10px;
+    border-radius: 5px;
 }
 
 .logout {
@@ -144,4 +168,10 @@ body {
 
 .logout:hover {
     text-decoration: underline;
+}
+.hidden{
+    display: none;
+}
+.far{
+    margin-right: 5px;
 }

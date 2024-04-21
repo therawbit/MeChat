@@ -37,7 +37,7 @@ function onConnected() {
         })
         .catch(error => console.error("Error fetching user info:", error));
 
-    document.querySelector('#connected-user-fullname').textContent = userinfo.fullName; // Assuming fullName is retrieved
+    document.querySelector('#me').textContent = userinfo.fullName; // Assuming fullName is retrieved
 }
 async function findAndDisplayConnectedUsers() {
     const connectedUsersResponse = await fetch('/users');
@@ -61,16 +61,15 @@ function appendUserElement(user, connectedUsersList) {
     listItem.classList.add('user-item');
     listItem.id = user.username;
 
-    const userImage = document.createElement('img');
-    userImage.src = '../img/user_icon.png';
-    userImage.alt = user.fullName;
+    const userImage = document.createElement('i');
+    userImage.classList.add("far");
+    userImage.classList.add("fa-user");
 
     const usernameSpan = document.createElement('span');
     usernameSpan.textContent = user.fullName;
 
-    const receivedMsgs = document.createElement('span');
-    receivedMsgs.textContent = '0';
-    receivedMsgs.classList.add('nbr-msg', 'hidden');
+    const receivedMsgs = document.createElement('i');
+    receivedMsgs.classList.add('nbr-msg', 'hidden','fas','fa-comments');
 
     listItem.appendChild(userImage);
     listItem.appendChild(usernameSpan);
@@ -95,8 +94,6 @@ function userItemClick(event) {
 
     const nbrMsg = clickedUser.querySelector('.nbr-msg');
     nbrMsg.classList.add('hidden');
-    nbrMsg.textContent = '0';
-
 }
 async function fetchAndDisplayUserChat() {
     const userChatResponse = await fetch(`/messages/${userinfo.username}/${selectedUserId}`);
